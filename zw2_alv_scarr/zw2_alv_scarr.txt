@@ -1,0 +1,23 @@
+*&---------------------------------------------------------------------*
+*& Report ZW2_ALV_SCARR
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+
+INCLUDE zw2_alv_scarr_top                       .    " Global Data
+
+INCLUDE zw2_alv_scarr_o01                       .  " PBO-Modules
+INCLUDE zw2_alv_scarr_i01                       .  " PAI-Modules
+INCLUDE zw2_alv_scarr_f01                       .  " FORM-Routines
+
+************************************************************************
+
+START-OF-SELECTION.
+
+  PERFORM data_retrieval.
+  PERFORM build_fieldcatalog.
+  PERFORM build_layout.
+  PERFORM display_alv_report.
+
+----------------------------------------------------------------------------------
+Extracted by Mass Download version 1.4.6 - E.G.Mellodew. 1998-2025. Sap Release 752

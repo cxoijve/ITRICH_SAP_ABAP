@@ -1,0 +1,32 @@
+*&---------------------------------------------------------------------*
+*& Include ZW2_ALV_SCARR_TOP                        - Report ZW2_ALV_SCARR
+*&---------------------------------------------------------------------*
+REPORT zw2_alv_scarr.
+
+TABLES: scarr.
+
+TYPE-POOLS: slis.                                 "ALV Declarations
+
+*Data Declaration
+*----------------
+TYPES: BEGIN OF t_scarr,
+         mandt    TYPE scarr-mandt,
+         carrid   TYPE scarr-carrid,
+         carrname TYPE scarr-carrname,
+         currcode TYPE scarr-currcode,
+         url      TYPE scarr-url,
+       END OF t_scarr.
+
+DATA: gt_scarr TYPE STANDARD TABLE OF t_scarr INITIAL SIZE 0,
+      gs_scarr TYPE t_scarr.
+
+*ALV data declarations
+DATA: fieldcatalog TYPE slis_t_fieldcat_alv WITH HEADER LINE,
+      gd_tab_group TYPE slis_t_sp_group_alv,
+      gd_layout    TYPE slis_layout_alv,
+      gd_repid     LIKE sy-repid.
+
+DATA: t TYPE slis_t_sp_group_alv.
+
+----------------------------------------------------------------------------------
+Extracted by Mass Download version 1.4.6 - E.G.Mellodew. 1998-2025. Sap Release 752
