@@ -57,7 +57,7 @@ FORM build_fieldcatalog.
   fieldcatalog-seltext_m   = 'Flight Connection Number'.
   fieldcatalog-col_pos     = 1.
   fieldcatalog-key         = 'X'.
-  fieldcatalog-lzero       = 'X'. "### 0## ##
+  fieldcatalog-lzero       = 'X'. "왼쪽을 0으로 채움
   APPEND fieldcatalog TO fieldcatalog.
   CLEAR  fieldcatalog.
 
@@ -70,7 +70,7 @@ FORM build_fieldcatalog.
   fieldcatalog-fieldname   = 'PRICE'.
   fieldcatalog-seltext_m   = 'Airfare'.
   fieldcatalog-col_pos     = 3.
-  fieldcatalog-cfieldname = 'currency'.  "## ##
+  fieldcatalog-cfieldname = 'currency'.  "통화 적용
   APPEND fieldcatalog TO fieldcatalog.
   CLEAR  fieldcatalog.
 
