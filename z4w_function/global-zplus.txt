@@ -1,0 +1,6 @@
+FUNCTION-POOL ZTEST.                        "MESSAGE-ID ..
+
+* INCLUDE LZTESTD...                         " Local class definition
+
+----------------------------------------------------------------------------------
+Extracted by Mass Download version 1.4.6 - E.G.Mellodew. 1998-2025. Sap Release 752

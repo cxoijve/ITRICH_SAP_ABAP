@@ -1,0 +1,19 @@
+FUNCTION zplus.
+*"----------------------------------------------------------------------
+*"*"Local Interface:
+*"  IMPORTING
+*"     REFERENCE(NUM1) TYPE  I
+*"     REFERENCE(NUM2) TYPE  I
+*"  EXPORTING
+*"     REFERENCE(SUM1) TYPE  I
+*"----------------------------------------------------------------------
+
+  sum1 = num1 + num2.
+
+
+
+
+ENDFUNCTION.
+
+----------------------------------------------------------------------------------
+Extracted by Mass Download version 1.4.6 - E.G.Mellodew. 1998-2025. Sap Release 752
