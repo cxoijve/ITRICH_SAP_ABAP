@@ -1,0 +1,177 @@
+*&---------------------------------------------------------------------*
+*& Report Z4W_ALV_OPT1
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT z4w_alv_opt1.
+
+TABLES:     sflight.
+
+TYPE-POOLS: slis.                                 "ALV Declarations
+
+*Data Declaration
+*----------------
+TYPES: BEGIN OF t_sflight,
+         carrid    TYPE sflight-carrid,
+         connid    TYPE sflight-connid,
+         price     TYPE sflight-price,
+         currency  TYPE sflight-currency,
+         planetype TYPE sflight-planetype,
+         "Used to store row color attributes
+       END OF t_sflight.
+
+DATA: it_sflight TYPE STANDARD TABLE OF t_sflight INITIAL SIZE 0,
+      wa_sflight TYPE t_sflight.
+
+*ALV data declarations
+DATA: fieldcatalog TYPE slis_t_fieldcat_alv WITH HEADER LINE,
+      gd_tab_group TYPE slis_t_sp_group_alv,
+      gd_layout    TYPE slis_layout_alv,
+      gd_repid     LIKE sy-repid.
+
+
+DATA : t TYPE slis_t_sp_group_alv .
+
+DATA : it_sort TYPE slis_t_sortinfo_alv,
+       wa_sort TYPE slis_sortinfo_alv.
+
+************************************************************************
+*Start-of-selection.
+START-OF-SELECTION.
+
+  PERFORM data_retrieval.
+  PERFORM build_fieldcatalog.
+  PERFORM build_layout.
+  "아래 부분 두번 클릭해서 맨아래 코드 자동 입력되도록하기
+  PERFORM build_sort.
+  PERFORM display_alv_report.
+
+
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_FIELDCATALOG
+*&---------------------------------------------------------------------*
+*       Build Fieldcatalog for ALV Report
+*----------------------------------------------------------------------*
+FORM build_fieldcatalog.
+
+  fieldcatalog-fieldname   = 'carrid'.
+  fieldcatalog-seltext_m   = 'Airline Code'.
+  fieldcatalog-col_pos     = 0.
+  fieldcatalog-key         = 'X'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'connid'.
+  fieldcatalog-seltext_l   = 'Flight Connection Number'.
+  fieldcatalog-col_pos     = 1.
+  fieldcatalog-lzero       = 'X'.
+  fieldcatalog-key         = 'X'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'price'.
+  fieldcatalog-seltext_m   = 'Airfare'.
+  fieldcatalog-col_pos     = 2.
+  fieldcatalog-do_sum      = 'X'.
+  fieldcatalog-hotspot     = 'X'.
+  "currency(화폐) 단위에 따라 거기에 맞게 price단위를 변경한다.
+  fieldcatalog-cfieldname  = 'currency'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'currency'.
+  fieldcatalog-seltext_l   = 'Local currency of airline'.
+  fieldcatalog-col_pos     = 3.
+  fieldcatalog-emphasize   = 'C500'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'planetype'.
+  fieldcatalog-seltext_m   = 'Aircraft Type'.
+  fieldcatalog-col_pos     = 4.
+  fieldcatalog-emphasize   = 'C500'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+
+ENDFORM.                    " BUILD_FIELDCATALOG
+
+
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_LAYOUT
+*&---------------------------------------------------------------------*
+*       Build layout for ALV grid report
+*----------------------------------------------------------------------*
+FORM build_layout.
+
+  gd_layout-no_input          = 'X'.
+  gd_layout-colwidth_optimize = 'X'.
+  gd_layout-zebra = 'X'.
+*  gd_layout-info_fieldname =      'LINE_COLOR'.
+*  gd_layout-def_status = 'A'.
+
+ENDFORM.                    " BUILD_LAYOUT
+
+
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV_REPORT
+*&---------------------------------------------------------------------*
+*       Display report using ALV grid
+*----------------------------------------------------------------------*
+FORM display_alv_report.
+  gd_repid = sy-repid.
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      i_callback_program = gd_repid
+      is_layout          = gd_layout
+      it_fieldcat        = fieldcatalog[]
+      i_save             = 'X'
+      it_sort            = it_sort
+    TABLES
+      t_outtab           = it_sflight
+    EXCEPTIONS
+      program_error      = 1
+      OTHERS             = 2.
+  IF sy-subrc <> 0.
+* MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+  ENDIF.
+
+
+ENDFORM.                    " DISPLAY_ALV_REPORT
+
+
+*&---------------------------------------------------------------------*
+*&      Form  DATA_RETRIEVAL
+*&---------------------------------------------------------------------*
+*       Retrieve data form EKPO table and populate itab it_ekko
+*----------------------------------------------------------------------*
+FORM data_retrieval.
+  DATA: ld_color(1) TYPE c.
+
+  SELECT carrid connid price currency planetype
+   UP TO 1000 ROWS
+    FROM sflight
+    INTO TABLE it_sflight.
+
+ENDFORM.                    " DATA_RETRIEVAL
+
+"이 부분 할 때는 위에 perform  부분 주석 참고
+FORM build_sort.
+
+  wa_sort-spos             = 0.
+  wa_sort-fieldname        = 'carrid'. "carrid를 기준으로 각 서브토탈을 구해줌
+  wa_sort-up               = 'X'.
+  wa_sort-subtot           = 'X'.
+  APPEND wa_sort TO it_sort. " 한 행 wa_sort을 it_sort 테이블에 집어 넣는다
+
+  wa_sort-spos             = 1.
+  wa_sort-fieldname        = 'connid'. "connid를 기준으로 각 서브토탈을 구해줌
+  wa_sort-up               = 'X'.
+  wa_sort-subtot           = 'X'.
+  APPEND wa_sort TO it_sort. " 한 행 wa_sort을 it_sort 테이블에 집어 넣는다
+
+ENDFORM.
+
+----------------------------------------------------------------------------------
+Extracted by Mass Download version 1.4.6 - E.G.Mellodew. 1998-2025. Sap Release 752
