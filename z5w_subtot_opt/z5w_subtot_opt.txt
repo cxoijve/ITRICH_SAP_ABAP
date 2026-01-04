@@ -1,0 +1,192 @@
+*&---------------------------------------------------------------------*
+*& Report Z5W_SUBTOT_OPT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT z5w_subtot_opt.
+
+TABLES:     sflight.
+
+TYPE-POOLS: slis.                                 "ALV Declarations
+
+*Data Declaration
+*----------------
+TYPES: BEGIN OF t_sfli,
+         carrid    TYPE sflight-carrid,
+         connid    TYPE sflight-connid,
+         price     TYPE sflight-price,
+         currency  TYPE sflight-currency,
+         planetype TYPE sflight-planetype,
+         seatsmax  TYPE sflight-seatsmax,
+       END OF t_sfli.
+
+DATA: it_sfli TYPE STANDARD TABLE OF t_sfli,
+      wa_sfli TYPE t_sfli.
+
+*ALV data declarations
+DATA: fieldcatalog TYPE slis_t_fieldcat_alv WITH HEADER LINE,
+      gd_tab_group TYPE slis_t_sp_group_alv,
+      gd_layout    TYPE slis_layout_alv,
+      gd_repid     LIKE sy-repid.
+
+DATA: it_sort TYPE slis_t_sortinfo_alv,
+      wa_sort TYPE slis_sortinfo_alv.
+
+DATA : t TYPE slis_t_sp_group_alv .
+************************************************************************
+*Start-of-selection.
+START-OF-SELECTION.
+
+  PERFORM data_retrieval.
+  PERFORM build_fieldcatalog.
+  PERFORM build_layout.
+  PERFORM build_sort.
+  PERFORM display_alv_report.
+
+
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_FIELDCATALOG
+*&---------------------------------------------------------------------*
+*       Build Fieldcatalog for ALV Report
+*----------------------------------------------------------------------*
+FORM build_fieldcatalog.
+
+  fieldcatalog-fieldname   = 'CARRID'.
+  fieldcatalog-seltext_m   = '항공사 코드'.
+  fieldcatalog-col_pos     = 0.
+  fieldcatalog-outputlen   = 10.
+  fieldcatalog-key = 'X'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'CONNID'.
+  fieldcatalog-seltext_m   = '비행기 번호'.
+  fieldcatalog-col_pos     = 1.
+  fieldcatalog-key = 'X'.
+  fieldcatalog-lzero = 'X'.
+  fieldcatalog-just = 'L'.
+  fieldcatalog-hotspot = 'X'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'PRICE'.
+  fieldcatalog-seltext_m   = '금액'.
+  fieldcatalog-col_pos     = 2.
+  fieldcatalog-do_sum = 'X'.
+  fieldcatalog-cfieldname = 'CURRENCY'.   " 통화 적용
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'CURRENCY'.
+  fieldcatalog-seltext_m   = '통화'.
+  fieldcatalog-col_pos     = 3.
+  fieldcatalog-outputlen   = 10.
+  fieldcatalog-emphasize = 'X'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'PLANETYPE'.
+  fieldcatalog-seltext_m   = '비행기 타입'.
+  fieldcatalog-col_pos     = 4.
+  fieldcatalog-emphasize = 'C600'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'SEATSMAX'.
+  fieldcatalog-seltext_m   = '전체좌석수'.
+  fieldcatalog-col_pos     = 5.
+  fieldcatalog-do_sum = 'X'.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+ENDFORM.                    " BUILD_FIELDCATALOG
+
+
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_LAYOUT
+*&---------------------------------------------------------------------*
+*       Build layout for ALV grid report
+*----------------------------------------------------------------------*
+FORM build_layout.
+
+  gd_layout-no_input          = 'X'.
+  gd_layout-colwidth_optimize = 'X'.
+  gd_layout-zebra = 'X'.
+  gd_layout-totals_before_items = 'X'.
+*  gd_layout-info_fieldname =      'LINE_COLOR'.
+*  gd_layout-def_status = 'A'.
+
+ENDFORM.                    " BUILD_LAYOUT
+
+
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV_REPORT
+*&---------------------------------------------------------------------*
+*       Display report using ALV grid
+*----------------------------------------------------------------------*
+FORM display_alv_report.
+  gd_repid = sy-repid.
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      i_callback_program = gd_repid
+      is_layout          = gd_layout
+      it_fieldcat        = fieldcatalog[]
+      i_save             = 'X'
+      it_sort            = it_sort[]
+    TABLES
+      t_outtab           = it_sfli
+    EXCEPTIONS
+      program_error      = 1
+      OTHERS             = 2.
+  IF sy-subrc <> 0.
+* MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+  ENDIF.
+
+
+ENDFORM.                    " DISPLAY_ALV_REPORT
+
+
+*&---------------------------------------------------------------------*
+*&      Form  DATA_RETRIEVAL
+*&---------------------------------------------------------------------*
+*       Retrieve data form EKPO table and populate itab it_ekko
+*----------------------------------------------------------------------*
+FORM data_retrieval.
+  DATA: ld_color(1) TYPE c.
+
+  SELECT carrid connid price currency planetype seatsmax
+*   UP TO 10 ROWS
+    FROM sflight   "항공사 테이블
+    INTO TABLE it_sfli.
+
+ENDFORM.                    " DATA_RETRIEVAL
+*&---------------------------------------------------------------------*
+*& Form BUILD_SORT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM build_sort .
+
+  wa_sort-spos = '1'.                 " 정렬순서
+  wa_sort-fieldname = 'CARRID'.       " 필드이름
+  wa_sort-up = 'X'.                   " 오름차순
+  wa_sort-subtot = 'X'.               " 서브토탈
+*  WA_sort-expa = 'X'.                 " 접기
+  APPEND wa_sort TO it_sort.
+  CLEAR wa_sort.
+
+  wa_sort-spos = '2'.
+  wa_sort-fieldname = 'CONNID'.
+  wa_sort-down = 'X'.                 " 내림차순
+  wa_sort-subtot = 'X'.               " 서브토탈
+  APPEND wa_sort TO it_sort.
+  CLEAR wa_sort.
+
+ENDFORM.
+
+----------------------------------------------------------------------------------
+Extracted by Mass Download version 1.4.6 - E.G.Mellodew. 1998-2026. Sap Release 752
