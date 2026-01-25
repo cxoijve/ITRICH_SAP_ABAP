@@ -1,0 +1,345 @@
+*&---------------------------------------------------------------------*
+*& Report Z8W_SEARCHHELP_EX01
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT z8w_searchhelp_ex01.
+
+TABLES:     scarr.
+
+
+TYPE-POOLS: slis.                                 "ALV Declarations
+
+*Data Declaration
+*----------------
+TYPES: BEGIN OF t_scarr,
+         carrid   TYPE scarr-carrid,
+         carrname TYPE scarr-carrname,
+         currcode TYPE scarr-currcode,
+         url      TYPE scarr-url,
+         "Used to store row color attributes
+       END OF t_scarr.
+
+DATA: it_scarr TYPE STANDARD TABLE OF t_scarr INITIAL SIZE 0,
+      wa_scarr TYPE t_scarr.
+
+*ALV data declarations
+DATA: fieldcatalog TYPE slis_t_fieldcat_alv WITH HEADER LINE,
+      gd_tab_group TYPE slis_t_sp_group_alv,
+      gd_layout    TYPE slis_layout_alv,
+      gd_repid     LIKE sy-repid.
+
+
+*DATA : t TYPE slis_t_sp_group_alv .
+
+
+SELECTION-SCREEN BEGIN OF BLOCK part1 WITH FRAME TITLE TEXT-001.
+SELECT-OPTIONS s_carrid FOR scarr-carrid  .
+SELECTION-SCREEN SKIP.
+SELECT-OPTIONS s_cname FOR scarr-carrname  .
+SELECT-OPTIONS s_ccode FOR scarr-currcode  .
+SELECT-OPTIONS s_url FOR scarr-url  .
+SELECTION-SCREEN SKIP.
+PARAMETERS num TYPE i DEFAULT 10.
+*SELECT-OPTIONS s_carrn FOR scarr-carrname.
+*SELECT-OPTIONS s_currcd FOR scarr-currcode .
+*PARAMETERS p_carrid TYPE scarr-carrid OBLIGATORY DEFAULT 'AA'.
+SELECTION-SCREEN END OF BLOCK part1.
+
+
+INITIALIZATION.
+
+**p_carrid = 'AA'.
+*
+**
+
+*  s_carrid-SIGN   = 'I'.
+*  s_carrid-OPTION   = 'BT'.
+*  s_carrid-LOW     = 'AA'.
+*  s_carrid-HIGH   = 'AZ'.
+*  APPEND s_carrid TO s_carrid.
+*  CLEAR  s_carrid.
+*
+*  s_carrid-SIGN   = 'I'.
+*  s_carrid-OPTION   = 'EQ'.
+*  s_carrid-LOW     = 'AB'.
+**  s_carrid-HIGH   = 'AZ'.
+*  APPEND s_carrid TO s_carrid.
+*  CLEAR  s_carrid.
+*
+*  s_carrid-SIGN   = 'I'.
+*  s_carrid-OPTION   = 'EQ'.
+*  s_carrid-LOW     = 'AC'.
+**  s_carrid-HIGH   = 'AZ'.
+*  APPEND s_carrid TO s_carrid.
+*  CLEAR  s_carrid.
+*
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_cname-low.
+* s_cname-low = 'American Airlines'.
+
+  TYPES : BEGIN OF abc,
+            carrname TYPE scarr-carrname,
+          END OF abc.
+
+  DATA: it_f4help3 TYPE TABLE OF abc.
+
+  SELECT carrname FROM scarr
+  INTO TABLE it_f4help3.
+
+  DATA: it_return_tab TYPE ddshretval OCCURS 0 WITH HEADER LINE .
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      retfield         = 'CARRNAME'
+      value_org        = 'S'
+      dynprofield      = 's_cname-low'
+      dynpprog         = sy-repid
+      dynpnr           = sy-dynnr
+      callback_form    = 'CALL_BACK2'
+      callback_program = sy-repid
+    TABLES
+      value_tab        = it_f4help3
+      return_tab       = it_return_tab
+    EXCEPTIONS
+      parameter_error  = 1
+      no_values_found  = 2
+      OTHERS           = 3.
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_cname-high.
+*  s_cname-high = 'American Airlines'.
+
+
+  TYPES : BEGIN OF abc,
+            carrname TYPE scarr-carrname,
+          END OF abc.
+
+  DATA: it_f4help3 TYPE TABLE OF abc.
+
+  SELECT carrname FROM scarr
+  INTO TABLE it_f4help3.
+
+  DATA: it_return_tab TYPE ddshretval OCCURS 0 WITH HEADER LINE .
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      retfield         = 'CARRNAME'
+      value_org        = 'S'
+      dynprofield      = 's_cname-high'
+      dynpprog         = sy-repid
+      dynpnr           = sy-dynnr
+      callback_form    = 'CALL_BACK2'
+      callback_program = sy-repid
+    TABLES
+      value_tab        = it_f4help3
+      return_tab       = it_return_tab
+    EXCEPTIONS
+      parameter_error  = 1
+      no_values_found  = 2
+      OTHERS           = 3.
+
+
+  " URL 추가
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_url-low.
+* s_cname-low = 'American Airlines'.
+
+  TYPES : BEGIN OF abc,
+            carrid   TYPE scarr-carrid,
+            carrname TYPE scarr-carrname,
+            currcode TYPE scarr-currcode,
+            url      TYPE scarr-url,
+          END OF abc.
+
+  DATA: it_f4help3 TYPE TABLE OF abc.
+
+  SELECT carrid carrname currcode url FROM scarr
+  INTO TABLE it_f4help3.
+
+  DATA: it_return_tab TYPE ddshretval OCCURS 0 WITH HEADER LINE .
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      retfield         = 'URL'
+      value_org        = 'S'
+      dynprofield      = 's_url-low'
+      dynpprog         = sy-repid
+      dynpnr           = sy-dynnr
+      callback_form    = 'CALL_BACK2'
+      callback_program = sy-repid
+    TABLES
+      value_tab        = it_f4help3
+      return_tab       = it_return_tab
+    EXCEPTIONS
+      parameter_error  = 1
+      no_values_found  = 2
+      OTHERS           = 3.
+
+*    NUM = 10.
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_url-high.
+*  s_cname-high = 'American Airlines'.
+
+
+  TYPES : BEGIN OF abc,
+            url TYPE scarr-url,
+          END OF abc.
+
+  DATA: it_f4help3 TYPE TABLE OF abc.
+
+  SELECT url FROM scarr
+  INTO TABLE it_f4help3.
+
+  DATA: it_return_tab TYPE ddshretval OCCURS 0 WITH HEADER LINE .
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      retfield         = 'URL'
+      value_org        = 'S'
+      dynprofield      = 's_url-high'
+      dynpprog         = sy-repid
+      dynpnr           = sy-dynnr
+      callback_form    = 'CALL_BACK2'
+      callback_program = sy-repid
+    TABLES
+      value_tab        = it_f4help3
+      return_tab       = it_return_tab
+    EXCEPTIONS
+      parameter_error  = 1
+      no_values_found  = 2
+      OTHERS           = 3.
+
+
+
+*&---------------------------------------------------------------------*
+*&      Form  call_back2
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->RECORD_TAB   text
+*      -->SHLP_TOP     text
+*      -->CALLCONTROL  text
+*----------------------------------------------------------------------*
+FORM call_back2 TABLES record_tab STRUCTURE seahlpres
+               CHANGING shlp_top TYPE shlp_descr
+                     callcontrol LIKE ddshf4ctrl.
+
+  shlp_top-intdescr-dialogtype = 'A'.   "A 100개 이상이면 다이알로그 조회, D 즉시조회,  C 다이알로그 조회
+
+ENDFORM.                    "call_back
+
+************************************************************************
+*Start-of-selection.
+START-OF-SELECTION.
+
+  PERFORM data_retrieval.
+  PERFORM build_fieldcatalog.
+  PERFORM build_layout.
+  PERFORM display_alv_report.
+
+
+
+
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_FIELDCATALOG
+*&---------------------------------------------------------------------*
+*       Build Fieldcatalog for ALV Report
+*----------------------------------------------------------------------*
+FORM build_fieldcatalog.
+
+  fieldcatalog-fieldname   = 'CARRID'.
+  fieldcatalog-seltext_m   = 'Airline Code(CARRID)'.
+  fieldcatalog-col_pos     = 0.
+  fieldcatalog-outputlen   = 10.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'CARRNAME'.
+  fieldcatalog-seltext_l   = 'Airline name(CARRNAME)'.
+  fieldcatalog-col_pos     = 1.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'CURRCODE'.
+  fieldcatalog-seltext_l   = 'Local currency of airline(CURRCODE)'.
+  fieldcatalog-col_pos     = 2.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+  fieldcatalog-fieldname   = 'URL'.
+  fieldcatalog-seltext_m   = 'Airline URL(URL)'.
+  fieldcatalog-col_pos     = 3.
+  APPEND fieldcatalog TO fieldcatalog.
+  CLEAR  fieldcatalog.
+
+ENDFORM.                    " BUILD_FIELDCATALOG
+
+
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_LAYOUT
+*&---------------------------------------------------------------------*
+*       Build layout for ALV grid report
+*----------------------------------------------------------------------*
+FORM build_layout.
+
+  gd_layout-no_input          = 'X'.
+  gd_layout-colwidth_optimize = 'X'.
+  gd_layout-zebra = 'X'.
+*  gd_layout-info_fieldname =      'LINE_COLOR'.
+*  gd_layout-def_status = 'A'.
+
+ENDFORM.                    " BUILD_LAYOUT
+
+
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV_REPORT
+*&---------------------------------------------------------------------*
+*       Display report using ALV grid
+*----------------------------------------------------------------------*
+FORM display_alv_report.
+  gd_repid = sy-repid.
+
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      i_callback_program = gd_repid
+      is_layout          = gd_layout
+      it_fieldcat        = fieldcatalog[]
+      i_save             = 'X'
+    TABLES
+      t_outtab           = it_scarr
+    EXCEPTIONS
+      program_error      = 1
+      OTHERS             = 2.
+  IF sy-subrc <> 0.
+* MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+  ENDIF.
+
+
+
+
+ENDFORM.                    " DISPLAY_ALV_REPORT
+
+
+*&---------------------------------------------------------------------*
+*&      Form  DATA_RETRIEVAL
+*&---------------------------------------------------------------------*
+*       Retrieve data form EKPO table and populate itab it_ekko
+*----------------------------------------------------------------------*
+FORM data_retrieval.
+*  DATA: ld_color(1) TYPE c.
+
+  SELECT carrid carrname currcode url
+   UP TO num ROWS
+    FROM scarr
+    INTO TABLE it_scarr
+*    WHERE carrid = p_carrid.
+    WHERE carrid IN s_carrid
+      AND carrname IN s_cname
+      AND currcode IN s_ccode
+  AND url IN s_url.
+*    AND currcode IN s_currcd.
+
+ENDFORM.                    " DATA_RETRIEVAL
+
+----------------------------------------------------------------------------------
+Extracted by Mass Download version 1.4.6 - E.G.Mellodew. 1998-2026. Sap Release 752
